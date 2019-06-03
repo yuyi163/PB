@@ -2,8 +2,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
 import matplotlib.pyplot as plt
-import time
-import pandas as pd
 
 from trainDataPD import getData
 
@@ -22,15 +20,15 @@ def create_placeholders(n_x, n_y):
     return X, Y
 
 
-def initialize_parameters(n_x, n_y):
+def initialize_parameters(n_x, n_y, layer1Num, layer2Num):
 
     tf.set_random_seed(1)  # 指定随机种子
 
-    W1 = tf.get_variable("W1", [256, n_x], initializer=tf.contrib.layers.xavier_initializer(seed=1))
-    b1 = tf.get_variable("b1", [256, 1], initializer=tf.zeros_initializer())
-    W2 = tf.get_variable("W2", [32, 256], initializer=tf.contrib.layers.xavier_initializer(seed=1))
-    b2 = tf.get_variable("b2", [32, 1], initializer=tf.zeros_initializer())
-    W3 = tf.get_variable("W3", [n_y, 32], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    W1 = tf.get_variable("W1", [layer1Num, n_x], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b1 = tf.get_variable("b1", [layer1Num, 1], initializer=tf.zeros_initializer())
+    W2 = tf.get_variable("W2", [layer2Num, layer1Num], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b2 = tf.get_variable("b2", [layer2Num, 1], initializer=tf.zeros_initializer())
+    W3 = tf.get_variable("W3", [n_y, layer2Num], initializer=tf.contrib.layers.xavier_initializer(seed=1))
     b3 = tf.get_variable("b3", [n_y, 1], initializer=tf.zeros_initializer())
 
     parameters = {"W1": W1,
@@ -69,7 +67,7 @@ def compute_cost(A3, Y):
     return cost
 
 
-def model(X_train, Y_train, learning_rate=0.001, num_epochs=10000, print_cost=True, is_plot=True):
+def model(X_train, Y_train, layer1Num, layer2Num, learning_rate=0.001, num_epochs=10000, print_cost=True, is_plot=True):
 
     ops.reset_default_graph()  # 能够重新运行模型而不覆盖tf变量
     tf.set_random_seed(1)
@@ -83,7 +81,7 @@ def model(X_train, Y_train, learning_rate=0.001, num_epochs=10000, print_cost=Tr
     X, Y = create_placeholders(n_x, n_y)
 
     # 初始化参数
-    parameters = initialize_parameters(n_x, n_y)
+    parameters = initialize_parameters(n_x, n_y, layer1Num, layer2Num)
 
     # 前向传播
     A3 = forward_propagation(X, parameters)
@@ -136,25 +134,10 @@ def model(X_train, Y_train, learning_rate=0.001, num_epochs=10000, print_cost=Tr
         return parameters
 
 
-
-x_train, y_train, x_test = getData()
-# 开始时间
-start_time = time.clock()
-# 开始训练
-parameters = model(x_train, y_train, is_plot=True)
-# 结束时间
-end_time = time.clock()
-# 计算时差
-print("CPU的执行时间 = " + str(end_time - start_time) + " 秒")
-
+x_train, y_train, x_test = getData(ball=1)
+parameters = model(x_train, y_train, layer1Num=64, layer2Num=16, is_plot=False)
 x = tf.placeholder(tf.float32, [1*issue_num, 1])
 y_ = forward_propagation(x, parameters)
-
-
 sess = tf.Session()
-# prediction = sess.run(y_, feed_dict={x_red: x_test})
 prediction = sess.run(y_, feed_dict={x: x_test})
 print(prediction)
-# print(type(prediction))
-result = prediction.astype(np.int32)
-print(result, result.shape)

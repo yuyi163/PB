@@ -23,14 +23,14 @@ def getData(ball):
     y_train = np.zeros(shape=(i_max, 1))
 
     for i in range(i_max):
-        x = df.iloc[i: i+issue_num, 3].values.flatten()  # ndarray  1*(6*issue_num)
-        y = df.iloc[i+issue_num, 3]
+        x = df.iloc[i: i+issue_num, ball].values.flatten()  # ndarray  1*(6*issue_num)
+        y = df.iloc[i+issue_num, ball]
         x_train[i] = x
         y_train[i] = y
 
     x_train = x_train.T
     y_train = y_train.T
-    x_test = df.iloc[data_num - issue_num: data_num, 3].values.flatten().reshape(-1, 1)
+    x_test = df.iloc[data_num - issue_num: data_num, ball].values.flatten().reshape(-1, 1)
 
     print("---------训练集输入---------", x_train.shape)
     print("---------训练集输出---------", y_train.shape)
